@@ -353,5 +353,23 @@
         "content": [
             "Fix Bug: stock not found no err msg"
         ]
+    },
+    {
+        "version": "BY-1.0",
+        "date": "2023/07/02",
+        "content": [
+            "files: add gitignore",
+            "fix: change about info",
+            "fix: weather json to env",
+            "fix: youtube json to env",
+            "fix: change help info",
+            "feat: remove help report",
+            "feat: remove hardware",
+            "feat: remove calc",
+            "feat: remove speedtest",
+            "feat: remove archlinux",
+            "feat: remove special time",
+            "feat: remove time left"
+        ]
     }
 ]

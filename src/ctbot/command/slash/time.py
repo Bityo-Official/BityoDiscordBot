@@ -10,25 +10,6 @@ from ..utils import cog_slash_managed, gen_list_of_option_choices
 date_format = '%Y/%m/%d'
 datetime_format = '%Y/%m/%d %H:%M'
 
-def get_days_left(deadline, format=None):
-	if type(deadline) == str:
-		deadline = datetime.strptime(deadline, format)
-
-	if (deadline - datetime.now(timezone(timedelta(hours=+8)))).days/365 >=1: #如果到期日-今天 還有365天
-		return str((deadline-datetime.now(timezone(timedelta(hours=+8)))).days//365) + '年' \
-			 + str((deadline-datetime.now(timezone(timedelta(hours=+8)))).days%365) + '天' \
-			 + str((deadline-datetime.now(timezone(timedelta(hours=+8)))).seconds//3600) + '小時' \
-			 + str(((deadline-datetime.now(timezone(timedelta(hours=+8)))).seconds//60)%60) + '分鐘' #加入年
-	return str((deadline-datetime.now(timezone(timedelta(hours=+8)))).days) + '天' + str((deadline-datetime.now(timezone(timedelta(hours=+8)))).seconds//3600) + '小時' + str(((deadline-datetime.now(timezone(timedelta(hours=+8)))).seconds//60)%60) + '分鐘'
-
-def get_special_days_left():
-	timeLabel = open('config/timeLabel.json', mode='r', encoding='utf-8')
-	timeLabel = json.load(timeLabel)
-	text = ''
-	for i in timeLabel.keys():
-		text += f'{timeLabel[i]} {i} {get_days_left(timeLabel[i], date_format)}\n'
-	return text
-
 def get_remain_time(year, month, day, hour, minute, second):
 	d1 = datetime(year,1,1)
 	d2 = datetime(year,month,day)
@@ -53,10 +34,6 @@ class SlashTime(commands.Cog):
 		parser.add_argument('--datetime', action='store_true', default=False)
 		parser.add_argument('unused', nargs='*')
 		self.parser = parser
-
-	@cog_slash_managed(base='time', description='特別日倒數計時')
-	async def special_days_left(self, ctx):
-		await ctx.send(get_special_days_left())
 	
 	@cog_slash_managed(base='time', description='今年已經過了多少百分比',
 				options=[create_option('format', '格式',
@@ -71,11 +48,6 @@ class SlashTime(commands.Cog):
 			year = year - 1911
 		text = str(year) + '年已經過了' + str(remain_time)
 		await ctx.send(text)
-
-	@cog_slash_managed(base='time', description='自訂倒數計時 格式:YYYY/MM/DD')
-	async def left(self, ctx, time: str):
-		time = get_days_left(time, date_format)
-		await ctx.send('還剩下: ' + time)
 
 	@cog_slash_managed(base='time', description='現在時間',
 		options=[create_option('format', '格式', 

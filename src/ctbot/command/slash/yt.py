@@ -4,7 +4,9 @@ import requests
 from discord.ext import commands
 from ..utils import cog_slash_managed
 from ...player import SimplePlayer
-from ...version import bot, team, author, YouTube
+from ...version import bot, team, author
+import os
+from dotenv import load_dotenv
 
 # TODO: make permission check for next, prev, stop, pause, lcear function
 # TODO: get playlist info
@@ -66,11 +68,13 @@ class SlashYT(commands.Cog):
         
     @cog_slash_managed(base='yt', description='查看頻道資訊')
     async def channel_info(self, ctx, channel_id: str=None):
-        url = f"https://www.googleapis.com/youtube/v3/channels?key={YouTube['API_KEY']}&id={channel_id}&part=statistics"
+        load_dotenv()
+        YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+        url = f"https://www.googleapis.com/youtube/v3/channels?key={YOUTUBE_API_KEY}&id={channel_id}&part=statistics"
         jsonText = requests.get(url).text
         statistics = json.loads(jsonText)['items'][0]['statistics']
 
-        url = f"https://www.googleapis.com/youtube/v3/channels?key={YouTube['API_KEY']}&id={channel_id}&part=snippet"
+        url = f"https://www.googleapis.com/youtube/v3/channels?key={YOUTUBE_API_KEY}&id={channel_id}&part=snippet"
         jsonText = requests.get(url).text
         snippet = json.loads(jsonText)['items'][0]['snippet']
 
@@ -91,11 +95,13 @@ class SlashYT(commands.Cog):
 
     @cog_slash_managed(base='yt', description='查看影片資訊')
     async def video_info(self, ctx, video_id: str=None):
-        url = f"https://www.googleapis.com/youtube/v3/videos?key={YouTube['API_KEY']}&id={video_id}&part=statistics"
+        load_dotenv()
+        YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+        url = f"https://www.googleapis.com/youtube/v3/videos?key={YOUTUBE_API_KEY}&id={video_id}&part=statistics"
         jsonText = requests.get(url).text
         statistics = json.loads(jsonText)['items'][0]['statistics']
 
-        url = f"https://www.googleapis.com/youtube/v3/videos?key={YouTube['API_KEY']}&id={video_id}&part=snippet"
+        url = f"https://www.googleapis.com/youtube/v3/videos?key={YOUTUBE_API_KEY}&id={video_id}&part=snippet"
         jsonText = requests.get(url).text
         snippet = json.loads(jsonText)['items'][0]['snippet']
 
@@ -116,11 +122,11 @@ class SlashYT(commands.Cog):
 
     # @cog_slash_managed(base='yt', description='查看播放清單資訊')
     # async def playlist_info(self, ctx, playlist_id):
-    #     url = f"https://www.googleapis.com/youtube/v3/playlists?key={YouTube['API_KEY']}&id={playlist_id}&part=snippet"
+    #     url = f"https://www.googleapis.com/youtube/v3/playlists?key={YOUTUBE_API_KEY}&id={playlist_id}&part=snippet"
     #     jsonText = requests.get(url)
     #     snippet = json.loads(jsonText)
 
-    #     url = f"https://www.googleapis.com/youtube/v3/playlists?key={YouTube['API_KEY']}&id={playlist_id}&part=id,snippet&fields=items(id,snippet(title,channelId,channelTitle))"
+    #     url = f"https://www.googleapis.com/youtube/v3/playlists?key={YOUTUBE_API_KEY}&id={playlist_id}&part=id,snippet&fields=items(id,snippet(title,channelId,channelTitle))"
     #     jsonText = requests.get(url)
     #     snippet = json.loads(jsonText)['items'][0]['snippet']
 

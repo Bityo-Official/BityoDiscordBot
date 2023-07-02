@@ -4,15 +4,17 @@ from ..utils import cog_slash_managed , gen_list_of_choices
 from discord_slash.utils.manage_commands import create_option
 from discord_slash.utils import manage_components
 from discord_slash.model import SlashCommandOptionType , ButtonStyle
-from ...version import weather
 import requests
 import json
 import time , datetime
+from dotenv import load_dotenv
+import os
 
 # TODO: Clean Code
 # TODO: Fix Error that somewhere can not be outputed to the Discord
 
-token = f'{weather["weather_token"]}'
+load_dotenv()
+token = os.getenv("WEATHER_TOKEN")
 
 def split(text):
     temp = text.split()
