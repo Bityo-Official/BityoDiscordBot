@@ -1,4 +1,6 @@
 src/
 bot.ini
 
+src/__pycache__/
+
 .DS_Store
