@@ -371,5 +371,12 @@
             "feat: remove special time",
             "feat: remove time left"
         ]
+    },
+    {
+        "version": "BY-1.0.1",
+        "date": "2023/07/02",
+        "content": [
+            "cfg: change cfg text"
+        ]
     }
 ]
