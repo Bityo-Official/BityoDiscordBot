@@ -7,9 +7,70 @@ from ...player import SimplePlayer
 from ...version import bot, team, author
 import os
 from dotenv import load_dotenv
+from urllib.parse import urlparse, parse_qs
 
 # TODO: make permission check for next, prev, stop, pause, lcear function
 # TODO: get playlist info
+
+def extract_video_id(url):
+    parsed_url = urlparse(url)
+    query_params = parse_qs(parsed_url.query)
+    video_id = query_params.get("v")
+    if video_id:
+        return video_id[0]  # 返回匹配到的視頻 ID
+    return None
+    
+def getVideoInfo(video_id: str):
+        load_dotenv()
+        YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+        url = f"https://www.googleapis.com/youtube/v3/videos?key={YOUTUBE_API_KEY}&id={video_id}&part=statistics"
+        jsonText = requests.get(url).text
+        statistics = json.loads(jsonText)['items'][0]['statistics']
+
+        url = f"https://www.googleapis.com/youtube/v3/videos?key={YOUTUBE_API_KEY}&id={video_id}&part=snippet"
+        jsonText = requests.get(url).text
+        snippet = json.loads(jsonText)['items'][0]['snippet']
+
+        embed=discord.Embed(title=snippet['title'], url=bot['url'], description=snippet['description'], color=0x00ffd5)
+        embed.set_author(name=team['name'], url=bot['url'], icon_url=bot['icon'])
+        embed.set_thumbnail(url=snippet['thumbnails']['high']['url'])
+        embed.add_field(name='觀看次數', value=statistics['viewCount'], inline=True)
+        embed.add_field(name='按讚人數', value=statistics['likeCount'], inline=True)
+        embed.add_field(name='留言次數', value=statistics['commentCount'], inline=True)
+        embed.add_field(name='上傳日期', value=snippet['publishedAt'], inline=True)
+        embed.add_field(name='頻道標題', value=snippet['channelTitle'], inline=True)
+        # embed.add_field(name='影片標籤', value=snippet['tags'], inline=True)
+        # embed.add_field(name='預設語言', value=snippet['defaultLanguage'], inline=True)
+        embed.add_field(name='影片ID', value=video_id, inline=True)
+        embed.add_field(name='頻道ID', value=snippet['channelId'], inline=True)
+        embed.set_footer(text='技術提供: 靈萌團隊')
+        return embed
+
+def getChannelInfo(channel_id: str):
+    load_dotenv()
+    YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+    url = f"https://www.googleapis.com/youtube/v3/channels?key={YOUTUBE_API_KEY}&id={channel_id}&part=statistics"
+    jsonText = requests.get(url).text
+    statistics = json.loads(jsonText)['items'][0]['statistics']
+
+    url = f"https://www.googleapis.com/youtube/v3/channels?key={YOUTUBE_API_KEY}&id={channel_id}&part=snippet"
+    jsonText = requests.get(url).text
+    snippet = json.loads(jsonText)['items'][0]['snippet']
+
+    hiddenSubscriberCount = '是' if statistics['hiddenSubscriberCount'] == True else '否'
+
+    embed=discord.Embed(title=snippet['title'], url=bot['url'], description=snippet['description'], color=0x00ffd5)
+    embed.set_author(name=team['name'], url=bot['url'], icon_url=bot['icon'])
+    embed.set_thumbnail(url=snippet['thumbnails']['high']['url'])
+    embed.add_field(name='訂閱人數', value=statistics['subscriberCount'], inline=True)
+    embed.add_field(name='觀看人數', value=statistics['viewCount'], inline=True)
+    embed.add_field(name='影片數量', value=statistics['videoCount'], inline=True)
+    embed.add_field(name='顯示訂閱', value=hiddenSubscriberCount, inline=True)
+    embed.add_field(name='建立日期', value=snippet['publishedAt'], inline=True)
+    # embed.add_field(name='國家地區', value=snippet['country'], inline=True)
+    embed.add_field(name='頻道ID', value=channel_id, inline=True)
+    embed.set_footer(text='技術提供: 靈萌團隊')
+    return embed
 
 class SlashYT(commands.Cog):
     def __init__(self, bot: discord.Client):
@@ -30,8 +91,9 @@ class SlashYT(commands.Cog):
             if self.player.voice_channel == ctx.author.voice.channel:
                 # TODO: add requester
                 self.player.playlist.add_entry(url, '')
-                txt = '已加入清單，URL = ' + str(url)
-                await ctx.send(txt, hidden=False)
+                # txt = '已加入清單，URL = ' + str(url)
+                videoID = extract_video_id(url)
+                await ctx.send(embed=getVideoInfo(videoID) , hidden=False)
             else:
                 await ctx.send('語音頻道與機器人不符, 無權添加', hidden=False)
         else:
@@ -68,57 +130,11 @@ class SlashYT(commands.Cog):
         
     @cog_slash_managed(base='yt', description='查看頻道資訊')
     async def channel_info(self, ctx, channel_id: str=None):
-        load_dotenv()
-        YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-        url = f"https://www.googleapis.com/youtube/v3/channels?key={YOUTUBE_API_KEY}&id={channel_id}&part=statistics"
-        jsonText = requests.get(url).text
-        statistics = json.loads(jsonText)['items'][0]['statistics']
-
-        url = f"https://www.googleapis.com/youtube/v3/channels?key={YOUTUBE_API_KEY}&id={channel_id}&part=snippet"
-        jsonText = requests.get(url).text
-        snippet = json.loads(jsonText)['items'][0]['snippet']
-
-        hiddenSubscriberCount = '是' if statistics['hiddenSubscriberCount'] == True else '否'
-
-        embed=discord.Embed(title=snippet['title'], url=bot['url'], description=snippet['description'], color=0x00ffd5)
-        embed.set_author(name=team['name'], url=bot['url'], icon_url=bot['icon'])
-        embed.set_thumbnail(url=snippet['thumbnails']['high']['url'])
-        embed.add_field(name='訂閱人數', value=statistics['subscriberCount'], inline=True)
-        embed.add_field(name='觀看人數', value=statistics['viewCount'], inline=True)
-        embed.add_field(name='影片數量', value=statistics['videoCount'], inline=True)
-        embed.add_field(name='顯示訂閱', value=hiddenSubscriberCount, inline=True)
-        embed.add_field(name='建立日期', value=snippet['publishedAt'], inline=True)
-        # embed.add_field(name='國家地區', value=snippet['country'], inline=True)
-        embed.add_field(name='頻道ID', value=channel_id, inline=True)
-        embed.set_footer(text='技術提供: 靈萌團隊')
-        await ctx.send(embed=embed)
+        await ctx.send(embed=getChannelInfo(channel_id))
 
     @cog_slash_managed(base='yt', description='查看影片資訊')
     async def video_info(self, ctx, video_id: str=None):
-        load_dotenv()
-        YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-        url = f"https://www.googleapis.com/youtube/v3/videos?key={YOUTUBE_API_KEY}&id={video_id}&part=statistics"
-        jsonText = requests.get(url).text
-        statistics = json.loads(jsonText)['items'][0]['statistics']
-
-        url = f"https://www.googleapis.com/youtube/v3/videos?key={YOUTUBE_API_KEY}&id={video_id}&part=snippet"
-        jsonText = requests.get(url).text
-        snippet = json.loads(jsonText)['items'][0]['snippet']
-
-        embed=discord.Embed(title=snippet['title'], url=bot['url'], description=snippet['description'], color=0x00ffd5)
-        embed.set_author(name=team['name'], url=bot['url'], icon_url=bot['icon'])
-        embed.set_thumbnail(url=snippet['thumbnails']['high']['url'])
-        embed.add_field(name='觀看次數', value=statistics['viewCount'], inline=True)
-        embed.add_field(name='按讚人數', value=statistics['likeCount'], inline=True)
-        embed.add_field(name='留言次數', value=statistics['commentCount'], inline=True)
-        embed.add_field(name='上傳日期', value=snippet['publishedAt'], inline=True)
-        embed.add_field(name='頻道標題', value=snippet['channelTitle'], inline=True)
-        # embed.add_field(name='影片標籤', value=snippet['tags'], inline=True)
-        # embed.add_field(name='預設語言', value=snippet['defaultLanguage'], inline=True)
-        embed.add_field(name='影片ID', value=video_id, inline=True)
-        embed.add_field(name='頻道ID', value=snippet['channelId'], inline=True)
-        embed.set_footer(text='技術提供: 靈萌團隊')
-        await ctx.send(embed=embed)
+        await ctx.send(embed=getVideoInfo(video_id))
 
     # @cog_slash_managed(base='yt', description='查看播放清單資訊')
     # async def playlist_info(self, ctx, playlist_id):

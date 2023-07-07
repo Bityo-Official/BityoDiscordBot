@@ -378,5 +378,13 @@
         "content": [
             "cfg: change cfg text"
         ]
+    },
+    {
+        "version": "BY-1.0.2",
+        "date": "2023/07/07",
+        "content": [
+            "fix: change youtube_dl to yt_dlp",
+            "feat: add embed video info and channel info"
+        ]
     }
 ]
