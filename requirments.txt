@@ -9,3 +9,6 @@ PyNaCl
 twstock
 lxml
 git+https://github.com/kiki7000/discord.py-components
+openai
+yt_dlp
+python-dotenv

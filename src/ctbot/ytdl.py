@@ -1,4 +1,4 @@
-import youtube_dl as yt
+import yt_dlp as yt
 
 class YTDL:
     YTDL_OPTIONS = {'format': 'bestaudio', 'extract_flat': True}
